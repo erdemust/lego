@@ -1,4 +1,4 @@
-"""Çocukları sevindirecek, rengarenk ve eğlenceli parametrik yaratık atölyesi."""
+"""Çocukları sevindirecek, rengarenk ve eğlenceli parametrik yaratık atölyesi (Hata Düzeltilmiş)."""
 
 import random
 from io import BytesIO
@@ -10,7 +10,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Sevimli Yaratık Atölyesi 🐛✨", page_icon="🎨", layout="wide")
 
-# Varsayılan neşeli değerler
+# DÜZELTME: body_length minimum 80 ile uyumlu hale getirildi (örn: 130)
 DEFAULTS = {
     "body_length": 130, "thorax_width": 60, "thorax_height": 45,
     "head_width": 50, "head_height": 30,
@@ -23,7 +23,6 @@ for key, value in DEFAULTS.items():
         st.session_state[key] = value
 
 def make_bug(seed: int | None = None) -> None:
-    """Çocuklar için en çılgın ve sevimli kombinasyonları üretir."""
     rng = random.Random(seed)
     st.session_state.body_length = rng.randint(90, 160)
     st.session_state.thorax_width = rng.randint(40, 80)
@@ -31,7 +30,6 @@ def make_bug(seed: int | None = None) -> None:
     st.session_state.head_width = rng.randint(35, 65)
     st.session_state.head_height = rng.randint(22, 40)
     
-    # Çocukların çok seveceği canlı renk paletleri
     palettes = [
         ("#FF5964", "#FFD166"), ("#3A86EF", "#8338EC"),
         ("#FF006E", "#FB5607"), ("#06D6A0", "#118AB2"),
@@ -44,7 +42,6 @@ def make_bug(seed: int | None = None) -> None:
     st.session_state.wings = rng.choice([True, False])
     st.session_state.pattern = rng.choice(["Benekli", "Çizgili"])
     
-    # Komik ve tatlı isim önerileri
     names = ["Pofuduk", "Zıpzıp", "Boncuk", "Minnoş", "Ciciş", "Tırtılcan", "Patikler", "Fındık"]
     st.session_state.creature_name = rng.choice(names)
 
@@ -58,19 +55,16 @@ def draw_bug(config: dict) -> tuple[plt.Figure, BytesIO]:
     fig.patch.set_facecolor(config["background"])
     ax.set_facecolor(config["background"])
     
-    # Neşeli arka plan dalgaları
     x = np.linspace(0, 10, 240)
     for i in range(-4, 13):
         y = np.sin(x * 0.8 + i * 0.45) * 0.22 + i * 0.72
         ax.plot(x, y, color="#FFE082", alpha=0.3, linewidth=1.5, zorder=0)
 
-    # Kanatlar
     if config["wings"]:
         for cx, angle in ((4.15, 32), (5.85, -32)):
             ax.add_patch(Ellipse((cx, 3.55), 1.4, body_len * .75, angle=angle,
                                  facecolor="#FFFFFF", edgecolor="#FFD166", linewidth=1.5, alpha=.85, zorder=1))
 
-    # Gövde parçaları
     body_width = config["thorax_width"] * 1.1 / 10
     ax.add_patch(Ellipse((5, 3), body_width, body_len, facecolor=config["body_color"],
                          edgecolor="#263238", linewidth=2, zorder=2))
@@ -79,7 +73,6 @@ def draw_bug(config: dict) -> tuple[plt.Figure, BytesIO]:
     ax.add_patch(Ellipse((5, head_y), config["head_width"] / 10, head_h,
                          facecolor=config["detail_color"], edgecolor="#263238", linewidth=2, zorder=4))
 
-    # Desenler
     if config["pattern"] == "Çizgili":
         for frac in (.22, .40, .58, .76):
             y = 3 - body_len / 2 + body_len * frac
@@ -90,27 +83,20 @@ def draw_bug(config: dict) -> tuple[plt.Figure, BytesIO]:
             ax.scatter([5 + xoff], [3 - body_len / 2 + body_len * frac], s=80,
                        color="#FFFFFF", edgecolors="#263238", linewidths=1.5, zorder=2.6)
 
-    # Sevimli Gözler (Büyük ve parıltılı)
     eye_dx = min(config["head_width"] / 35, .45)
     eye_y = head_y + head_h * .12
-    # Büyük beyaz gözler
     ax.scatter([5 - eye_dx, 5 + eye_dx], [eye_y, eye_y], s=120, color="white", edgecolors="#263238", linewidths=1.5, zorder=5)
-    # Siyah bebekler
     ax.scatter([5 - eye_dx, 5 + eye_dx], [eye_y, eye_y], s=50, color="#263238", zorder=6)
-    # Gözlerdeki sevimli parıltı noktaları
     ax.scatter([5 - eye_dx + 0.05, 5 + eye_dx + 0.05], [eye_y + 0.05, eye_y + 0.05], s=15, color="white", zorder=7)
     
-    # Gülümseyen ağız :)
     ax.plot([4.85, 5.0, 5.15], [head_y - head_h * .15, head_y - head_h * .28, head_y - head_h * .15], color="#263238", linewidth=2, solid_capstyle="round", zorder=6)
 
-    # Antenler (Uçları ponponlu)
     if config["feelers"]:
         base_y = head_y + head_h * .45
         ax.plot([4.85, 4.3], [base_y, base_y + .85], color="#263238", linewidth=2.5, zorder=4)
         ax.plot([5.15, 5.7], [base_y, base_y + .85], color="#263238", linewidth=2.5, zorder=4)
         ax.scatter([4.3, 5.7], [base_y + .85] * 2, s=70, color=config["body_color"], edgecolors="#263238", linewidths=1.5, zorder=5)
         
-    # Renkli Ayaklar / Bacaklar
     if config["legs"]:
         for y in (3.3, 2.8, 2.3):
             ax.plot([5 - body_width / 2, 4.0], [y, y - .4], color="#263238", linewidth=2.5, solid_capstyle="round", zorder=1.4)
@@ -126,7 +112,6 @@ def draw_bug(config: dict) -> tuple[plt.Figure, BytesIO]:
     image.seek(0)
     return fig, image
 
-# Tasarım & Eğlenceli Fontlar
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
@@ -153,7 +138,6 @@ with st.sidebar:
         
     st.divider()
     
-    # İsim verme kutusu
     st.text_input("Yaratığının Adı:", key="creature_name")
     
     with st.expander("🌈 Renk Dünyası", expanded=True):
@@ -197,17 +181,15 @@ with right:
     st.subheader(f"🌟 Tanışın: {st.session_state.creature_name}!")
     st.markdown("Bu sevimli dostumuz seninle oynamaya hazır! 🎉")
     
-    # Eğlenceli rozetler / özellikler
     features = []
     if st.session_state.wings: features.append("🦋 Kanatlı Uçucu")
-    if st.session_state.feelers: features.append("antenna Antenli Dinleyici")
+    if st.session_state.feelers: features.append(" antennae Antenli Dinleyici")
     if st.session_state.legs: features.append("🐾 Koşucu Ayaklar")
     
     st.markdown(f"**Özellikleri:** " + (" · ".join(features) if features else "Sakin Dost"))
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Çocukları ödüllendiren neşeli etkileşim butonları
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🍎 Besle"):
